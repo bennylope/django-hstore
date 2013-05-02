@@ -60,10 +60,12 @@ class HstoreCreationMixin(object):
         if cursor.fetchone():
             # skip if already exists
             return
+
         if self.connection._version[0:2] >= (9, 1):
-            cursor.execute("create extension hstore;")
+            cursor.execute("CREATE EXTENSION IF NOT EXISTS hstore;")
             self.connection.commit_unless_managed()
             return
+
         import glob
         import os
         # Quick Hack to run HSTORE sql script for test runs
