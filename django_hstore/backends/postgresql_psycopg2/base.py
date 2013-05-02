@@ -15,7 +15,11 @@ COMMENTS = re.compile(r'/\*.*?\*/', re.MULTILINE | re.DOTALL)
 COMMENTS2 = re.compile(r'--.*?$', re.MULTILINE)
 
 
-class DatabaseCreation(DatabaseCreation):
+class HstoreCreationMixin(object):
+    """
+    Base functionality specific to the hstore backend.
+    """
+
     def executescript(self, path, title='SQL'):
         """
         Load up a SQL script file and execute.
@@ -96,7 +100,7 @@ class DatabaseCreation(DatabaseCreation):
             print >> sys.stderr, message
 
     def _create_test_db(self, verbosity, autoclobber):
-        super(DatabaseCreation, self)._create_test_db(verbosity, autoclobber)
+        super(HstoreCreationMixin, self)._create_test_db(verbosity, autoclobber)
         self.install_hstore_contrib()
         register_hstore(self.connection.connection, globally=True, unicode=True)
 
@@ -122,25 +126,33 @@ class DatabaseCreation(DatabaseCreation):
                     clauses.append(sql)
             clauses.append(';')
             return [ ' '.join(clauses) ]
-        return super(DatabaseCreation, self).sql_indexes_for_field(model, f, style)
+        return super(HstoreCreationMixin, self).sql_indexes_for_field(model, f, style)
 
 
-class DatabaseWrapper(DatabaseWrapper):
+class HstoreWrapperMixin(object):
     """
     Custom DB wrapper to inject connection registration and DB creation code
     """
 
     def __init__(self, *args, **params):
-        super(DatabaseWrapper, self).__init__(*args, **params)
+        super(HstoreWrapperMixin, self).__init__(*args, **params)
         self.creation = DatabaseCreation(self)
 
     def _cursor(self):
         # ensure that we're connected
-        cursor = super(DatabaseWrapper, self)._cursor()
+        cursor = super(HstoreWrapperMixin, self)._cursor()
 
         # register hstore extension
         register_hstore(self.connection, globally=True, unicode=True)
 
         # bypass future registrations
-        self._cursor = super(DatabaseWrapper, self)._cursor
+        self._cursor = super(HstoreWrapperMixin, self)._cursor
         return cursor
+
+
+class DatabaseCreation(HstoreCreationMixin, DatabaseCreation):
+    pass
+
+
+class DatabaseWrapper(HstoreWrapperMixin, DatabaseWrapper):
+    pass
