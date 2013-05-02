@@ -4,7 +4,7 @@ import sys
 import traceback
 from django import VERSION
 from django.conf import settings
-from django.db.backends.postgresql_psycopg2.base import *
+from django.db.backends.postgresql_psycopg2.base import DatabaseCreation, DatabaseWrapper
 from django.db.backends.util import truncate_name
 from psycopg2.extras import register_hstore
 
@@ -27,14 +27,14 @@ class HstoreCreationMixin(object):
         try:
             sql = ''.join(open(path).readlines())
             # strip out comments
-            sql = COMMENTS.sub('',sql)
-            sql = COMMENTS2.sub('',sql)
+            sql = COMMENTS.sub('', sql)
+            sql = COMMENTS2.sub('', sql)
             # execute script line by line
             cursor = self.connection.cursor()
             self.set_autocommit()
             for l in re.split(r';', sql):
                 l = l.strip()
-                if len(l)>0:
+                if len(l) > 0:
                     try:
                         cursor.execute(l)
                     except Exception:
@@ -60,14 +60,14 @@ class HstoreCreationMixin(object):
         if cursor.fetchone():
             # skip if already exists
             return
-        if self.connection._version[0:2]>=(9,1):
+        if self.connection._version[0:2] >= (9, 1):
             cursor.execute("create extension hstore;")
             self.connection.commit_unless_managed()
             return
         import glob
         import os
         # Quick Hack to run HSTORE sql script for test runs
-        sql = getattr(settings,'HSTORE_SQL',None)
+        sql = getattr(settings, 'HSTORE_SQL', None)
         if not sql:
             # Attempt to helpfully locate contrib SQL on typical installs
             for loc in (
@@ -87,7 +87,7 @@ class HstoreCreationMixin(object):
                 'C:/Program Files (x86)/PostgreSQL/*/share/contrib/hstore.sql',
             ):
                 files = glob.glob(loc)
-                if files and len(files)>0:
+                if files and len(files) > 0:
                     sql = sorted(files)[-1]
                     log.info("Found installed HSTORE script: %s" % (sql,))
                     break
@@ -125,7 +125,7 @@ class HstoreCreationMixin(object):
                 if sql:
                     clauses.append(sql)
             clauses.append(';')
-            return [ ' '.join(clauses) ]
+            return [' '.join(clauses)]
         return super(HstoreCreationMixin, self).sql_indexes_for_field(model, f, style)
 
 
