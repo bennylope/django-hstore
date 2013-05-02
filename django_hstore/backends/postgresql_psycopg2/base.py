@@ -2,10 +2,12 @@ import logging
 import re
 import sys
 import traceback
+
 from django import VERSION
 from django.conf import settings
 from django.db.backends.postgresql_psycopg2.base import DatabaseCreation, DatabaseWrapper
 from django.db.backends.util import truncate_name
+
 from psycopg2.extras import register_hstore
 
 
