@@ -1,7 +1,7 @@
-from django.forms import Field
-from django.utils import simplejson as json
-from django.contrib.admin.widgets import AdminTextareaWidget
+import json
 
+from django.forms import Field
+from django.contrib.admin.widgets import AdminTextareaWidget
 from django_hstore import util
 
 class JsonMixin(object):
