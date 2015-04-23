@@ -82,9 +82,9 @@ class HStoreQuery(Query):
 
 
 class HStoreQuerySet(QuerySet):
-    def __init__(self, model=None, query=None, using=None):
+    def __init__(self, model=None, query=None, using=None, hints=None):
         query = query or HStoreQuery(model)
-        super(HStoreQuerySet, self).__init__(model=model, query=query, using=using)
+        super(HStoreQuerySet, self).__init__(model=model, query=query, using=using, hints=hints)
 
     @select_query
     def hkeys(self, query, attr):
